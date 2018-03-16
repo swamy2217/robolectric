@@ -5,6 +5,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadow.api.ShadowDiscriminator;
 
 /**
  * Indicates that a class declaration is intended to shadow an Android class declaration.
@@ -78,5 +80,5 @@ public @interface Implements {
    */
   int maxSdk() default -1;
 
-  boolean hackyTerribleIgnore() default false;
+  Class<? extends ShadowDiscriminator> discriminator() default ShadowDiscriminator.class;
 }

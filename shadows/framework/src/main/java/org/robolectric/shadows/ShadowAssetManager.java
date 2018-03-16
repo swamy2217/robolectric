@@ -8,11 +8,9 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -42,6 +40,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadow.api.ShadowDiscriminator;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -69,7 +68,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = AssetManager.class, hackyTerribleIgnore = true)
+@Implements(value = AssetManager.class, discriminator = ShadowAssetManager.Discriminator.class)
 public class ShadowAssetManager extends ShadowAssetManagerCommon {
   public static final int STYLE_NUM_ENTRIES = 6;
   public static final int STYLE_TYPE = 0;
@@ -78,6 +77,15 @@ public class ShadowAssetManager extends ShadowAssetManagerCommon {
   public static final int STYLE_RESOURCE_ID = 3;
   public static final int STYLE_CHANGING_CONFIGURATIONS = 4;
   public static final int STYLE_DENSITY = 5;
+
+  static class Discriminator implements ShadowDiscriminator<ShadowAssetManager> {
+    @Override
+    public ShadowAssetManager newInstance() {
+      return RuntimeEnvironment.useLegacyResources()
+          ? new ShadowLegacyAssetManager()
+          : new ShadowArscAssetManager();
+    }
+  }
 
   public static final Ordering<String> ATTRIBUTE_TYPE_PRECIDENCE =
       Ordering.explicit(
